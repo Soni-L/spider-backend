@@ -7,16 +7,30 @@ app.use(cors());
 app.use(express.json());
 const port = 5000;
 
-app.get("/", async (req, res) => {
-  console.log(req.query.url);
-  res.json({ hello: "hello world" });
-  //   const browser = await puppeteer.launch();
-  //   const page = await browser.newPage();
-  //   await page.goto("https://example.org/", { waitUntil: "networkidle0" });
-  //   const data = await page.evaluate(() => document.querySelector("*").outerHTML);
+app.get("/fetch-page", async (req, res) => {
+  const url = decodeURIComponent(req.query.url); // URL of the page to retrieve
 
-  //   await browser.close();
-  //   res.json(data);
+  try {
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+    await page.goto(url, { waitUntil: "networkidle2" });
+
+    const html = await page.content();
+    const cssHandles = await page.$$('link[rel="stylesheet"]');
+    const css = await Promise.all(
+      cssHandles.map(async (handle) => {
+        const href = await page.evaluate((el) => el.href, handle);
+        const response = await page.goto(href);
+        return response.text();
+      })
+    );
+
+    await browser.close();
+
+    res.json({ html, css });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.listen(port, () => {
