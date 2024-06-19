@@ -16,19 +16,25 @@ app.get("/fetch-page", async (req, res) => {
     await page.goto(url, { waitUntil: "networkidle2" });
 
     const html = await page.content();
-    const cssHandles = await page.$$('link[rel="stylesheet"]');
-    let css = []
-    css = await Promise.allSettled(
-      cssHandles.map(async (handle) => {
-        const href = await page.evaluate((el) => el.href, handle);
-        const response = await page.goto(href);
-        return response.text();
-      })
-    );
+
+    const stylesheets = await page.evaluate(() => {
+      const sheets = Array.from(document.styleSheets);
+      return sheets
+        .map((sheet) => {
+          try {
+            return Array.from(sheet.cssRules)
+              .map((rule) => rule.cssText)
+              .join("\n");
+          } catch (e) {
+            // In case of cross-origin issues
+            return "";
+          }
+        })
+        .join("\n");
+    });
 
     await browser.close();
-
-    res.json({ html, css });
+    res.json({ html, styles : stylesheets });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
