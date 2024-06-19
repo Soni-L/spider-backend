@@ -17,7 +17,8 @@ app.get("/fetch-page", async (req, res) => {
 
     const html = await page.content();
     const cssHandles = await page.$$('link[rel="stylesheet"]');
-    const css = await Promise.all(
+    let css = []
+    css = await Promise.allSettled(
       cssHandles.map(async (handle) => {
         const href = await page.evaluate((el) => el.href, handle);
         const response = await page.goto(href);
