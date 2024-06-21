@@ -27,13 +27,10 @@ const getBrowser = async () => {
   return browserInstance;
 };
 
-async function createNewPage(id, url, browserInstance) {
+async function createNewPage(id, browserInstance) {
   try {
     const browser = browserInstance;
-    const decodedUrl = decodeURIComponent(url); // URL of the page to retrieve
     const page = await browser.newPage();
-    await page.goto(decodedUrl, { waitUntil: "networkidle2" });
-
     const createdAt = new Date();
     pages.push({ id, page, createdAt });
     return page;
@@ -58,8 +55,8 @@ function getPageById(id) {
 function removeOldPages() {
   const now = new Date();
   for (let i = pages.length - 1; i >= 0; i--) {
-    if (now - pages[i].createdAt >= 86400000) {
-      // 24 hours in ms
+    if (now - pages[i].createdAt >= 3600000) {
+      // 1 hour in ms
       pages.splice(i, 1);
     }
   }
