@@ -1,6 +1,8 @@
 import puppeteer from "puppeteer";
+import cron from "node-cron";
 
 let browserInstance = null;
+const pages = [];
 
 const launchBrowser = async () => {
   if (browserInstance) {
@@ -25,6 +27,49 @@ const getBrowser = async () => {
   return browserInstance;
 };
 
+async function createNewPage(id, url, browserInstance) {
+  try {
+    const browser = browserInstance;
+    const decodedUrl = decodeURIComponent(url); // URL of the page to retrieve
+    const page = await browser.newPage();
+    await page.goto(decodedUrl, { waitUntil: "networkidle2" });
+
+    const createdAt = new Date();
+    pages.push({ id, page, createdAt });
+    return page;
+  } catch {
+    console.log(error);
+    return null;
+  }
+}
+
+function getPageById(id) {
+  const now = new Date();
+  const pageData = pages.find(
+    (p) => p.id === id && now - p.createdAt < 3600000
+  ); // 1 hour in ms
+  if (pageData) {
+    return pageData.page;
+  } else {
+    return null;
+  }
+}
+
+function removeOldPages() {
+  const now = new Date();
+  for (let i = pages.length - 1; i >= 0; i--) {
+    if (now - pages[i].createdAt >= 86400000) {
+      // 24 hours in ms
+      pages.splice(i, 1);
+    }
+  }
+}
+
+// Schedule the cron job to run every hour
+cron.schedule("0 * * * *", () => {
+  removeOldPages();
+});
+
 const closeBrowser = async () => {
   if (browserInstance) {
     await browserInstance.close();
@@ -32,4 +77,4 @@ const closeBrowser = async () => {
   }
 };
 
-export { getBrowser, closeBrowser };
+export { getBrowser, closeBrowser, createNewPage, getPageById };
