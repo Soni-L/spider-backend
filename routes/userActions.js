@@ -3,8 +3,9 @@ import puppeteer from "puppeteer";
 const router = Router();
 
 router.get("/", async (req, res) => {
+  let browser;
   try {
-    let browser = await puppeteer.launch({ headless: true });
+    browser = await puppeteer.launch({ headless: true });
     const url = decodeURIComponent(req.query.url); // URL of the page to retrieve
     const page = await browser.newPage();
     await page.goto(url, { waitUntil: "networkidle2" });
