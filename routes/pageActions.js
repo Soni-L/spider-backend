@@ -1,11 +1,10 @@
 import { Router } from "express";
-import puppeteer from "puppeteer";
+import { getBrowser } from "../puppeteerManager.js";
 const router = Router();
 
 router.get("/", async (req, res) => {
-  let browser;
   try {
-    browser = await puppeteer.launch({ headless: true });
+    const browser = await getBrowser();
     const url = decodeURIComponent(req.query.url); // URL of the page to retrieve
     const page = await browser.newPage();
     await page.goto(url, { waitUntil: "networkidle2" });
@@ -28,11 +27,10 @@ router.get("/", async (req, res) => {
         .join("\n");
     });
 
+    await page.close();
     res.json({ html, styles: stylesheets });
   } catch (error) {
     res.status(500).json({ error: error.message });
-  } finally {
-    browser.close();
   }
 });
 

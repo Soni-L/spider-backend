@@ -1,44 +1,44 @@
 import express from "express";
 import cors from "cors";
-import puppeteer from "puppeteer";
-import pageActions from "./routes/pageActions.js"
-import userActions from "./routes/userActions.js"
+import { getBrowser } from "./puppeteerManager.js";
+import pageActions from "./routes/pageActions.js";
+import userActions from "./routes/userActions.js";
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 const PORT = 5000;
 
-let browser;
+// Use routes
+app.use("/fetch-page", pageActions);
+app.use("/user-actions", userActions);
+
+// Root route
+app.get("/", (req, res) => {
+  res.send("Welcome to the API");
+});
 
 (async () => {
-  // Launch the Puppeteer browser and keep it running
-  browser = await puppeteer.launch({ headless: true });
+  try {
+    await getBrowser();
+    console.log("Puppeteer browser launched");
 
-  // Use routes
-  app.use("/fetch-page", pageActions);
-  app.use("/user-actions", userActions);
+    app.listen(PORT, () => {
+      console.log(`Server is running on http://localhost:${PORT}`);
+    });
 
-  // Root route
-  app.get("/", (req, res) => {
-    res.send("Welcome to the API");
-  });
+    // Handle server shutdown
+    const gracefulShutdown = async () => {
+      await closeBrowser();
+      console.log("Puppeteer browser closed");
+      process.exit(0);
+    };
 
-
-  app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
-  });
+    // Listen for termination signals
+    process.on("SIGTERM", gracefulShutdown);
+    process.on("SIGINT", gracefulShutdown);
+  } catch (error) {
+    console.error("Error starting server:", error);
+    process.exit(1);
+  }
 })();
-
-// Gracefully handle process termination
-process.on("SIGINT", async () => {
-  console.log("Closing Puppeteer browser...");
-  if (browser) await browser.close();
-  process.exit();
-});
-
-process.on("SIGTERM", async () => {
-  console.log("Closing Puppeteer browser...");
-  if (browser) await browser.close();
-  process.exit();
-});
