@@ -14,9 +14,8 @@ let browser;
   browser = await puppeteer.launch({ headless: true });
 
   app.get("/fetch-page", async (req, res) => {
-    const url = decodeURIComponent(req.query.url); // URL of the page to retrieve
-
     try {
+      const url = decodeURIComponent(req.query.url); // URL of the page to retrieve
       const page = await browser.newPage();
       await page.goto(url, { waitUntil: "networkidle2" });
 
