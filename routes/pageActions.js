@@ -3,15 +3,15 @@ import { createNewPage, getBrowser, getPageById } from "../puppeteerManager.js";
 import { v4 as uuidv4 } from "uuid";
 const router = Router();
 
-router.post("/", async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const browser = await getBrowser();
     const url = decodeURIComponent(req.query.url); // URL of the page to retrieve
     const id = uuidv4();
     await createNewPage(id, browser);
-    const page = getPageById(id)
+    const page = getPageById(id);
     await page.goto(url, { waitUntil: "networkidle2" });
-
+    
     const html = await page.content();
 
     const stylesheets = await page.evaluate(() => {
@@ -30,13 +30,11 @@ router.post("/", async (req, res) => {
         .join("\n");
     });
 
-    const cookieName = "client-tab-session-id";
-    const options = {
-      maxAge: 3600000, // Cookie expiration time in milliseconds (1 hour)
-    };
-
-    // Set the cookie
-    res.cookie(cookieName, id, options);
+    res.cookie("client_tab_session_id", id, {
+      httpOnly: true, // The cookie only accessible by the web server
+      secure: true, // Ensure the browser only sends the cookie over HTTPS
+      maxAge: 1000 * 60 * 15, // Cookie expiry time in milliseconds (15 minutes)
+    });
 
     res.json({ html, styles: stylesheets });
   } catch (error) {

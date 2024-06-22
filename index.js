@@ -1,13 +1,20 @@
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import { getBrowser } from "./puppeteerManager.js";
 import pageActions from "./routes/pageActions.js";
 import userActions from "./routes/userActions.js";
 
-const app = express();
-app.use(cors());
-app.use(express.json());
 const PORT = 5000;
+const app = express();
+app.use(cookieParser());
+app.use(
+  cors({
+    origin: "http://localhost:3000", // Your React app's origin
+    credentials: true, // Allow credentials (cookies) to be included
+  })
+);
+app.use(express.json());
 
 // Use routes
 app.use("/fetch-page", pageActions);
