@@ -1,12 +1,15 @@
 import { Router } from "express";
-import { v4 as uuidv4 } from "uuid";
-import { createNewPage, getBrowser, getPageById } from "../puppeteerManager.js";
+import { getPageById } from "../puppeteerManager.js";
 const router = Router();
 
-router.post("/", async (req, res) => {
+router.get("/", async (req, res) => {
   try {
-    const id = uuidv4();
+    const id = req.cookies.client_tab_session_id;
     const page = getPageById(id);
+    const xpath = req.query.xpath;
+
+    await page.waitForSelector(`::-p-xpath(${xpath})`);
+    await page.click(`::-p-xpath(${xpath})`);
 
     const html = await page.content();
 

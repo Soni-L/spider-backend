@@ -10,7 +10,7 @@ router.get("/", async (req, res) => {
     const id = uuidv4();
     await createNewPage(id, browser);
     const page = getPageById(id);
-    await page.goto(url, { waitUntil: "networkidle2" });
+    await page.goto(url, { waitUntil: "networkidle2", timeout: 100000 });
     
     const html = await page.content();
 
