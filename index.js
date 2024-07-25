@@ -10,7 +10,7 @@ const app = express();
 app.use(cookieParser());
 app.use(
   cors({
-    origin: "http://localhost:3000", // Your React app's origin
+    origin: "http://localhost:5173", // Your React app's origin
     credentials: true, // Allow credentials (cookies) to be included
   })
 );
