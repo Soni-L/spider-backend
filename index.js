@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import { getBrowser } from "./puppeteerManager.js";
+import { getBrowser } from "./backend_browser/puppeteerManager.js";
 import pageActions from "./routes/pageActions.js";
 import userActions from "./routes/userActions.js";
 

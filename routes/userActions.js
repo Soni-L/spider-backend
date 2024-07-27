@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getPageById, createNewPage } from "../puppeteerManager.js";
+import { getPageById, createNewPage } from "../backend_browser/puppeteerManager.js";
 import { v4 as uuidv4 } from "uuid";
 const router = Router();
 
